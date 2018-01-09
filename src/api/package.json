@@ -1,0 +1,22 @@
+{
+  "name": "azure-beer-store-api",
+  "version": "1.0.0",
+  "description": "A beer store implemented on the top of Azure functions",
+  "main": "handler.js",
+  "keywords": [
+    "azure",
+    "serverless"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Nicola Baldi (@naighes)",
+  "license": "ISC",
+  "dependencies": {
+    "graphql": "^0.12.3",
+    "graphql-tools": "^2.16.0"
+  },
+  "devDependencies": {
+    "mocha": "^4.1.0"
+  }
+}

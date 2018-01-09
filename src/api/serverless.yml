@@ -1,0 +1,24 @@
+service: beer-store
+
+provider:
+  name: azure
+  location: West Europe
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  graphql:
+    handler: handler.graphql
+    events:
+      - http: true
+        x-azure-settings:
+        authLevel : anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+          methods:
+            - GET
+          authLevel: anonymous
+          route: graphql

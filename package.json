@@ -1,0 +1,21 @@
+{
+  "name": "azure-beer-store",
+  "version": "1.0.0",
+  "description": "Azure Functions sample for the Serverless framework",
+  "main": "",
+  "keywords": [
+    "azure",
+    "serverless"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+  },
+  "devDependencies": {
+    "serverless": "^1.25.0",
+    "serverless-azure-functions": "^0.4.0"
+  }
+}
