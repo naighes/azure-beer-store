@@ -12,8 +12,7 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "serverless": "^1.25.0",
     "serverless-azure-functions": "^0.4.0"

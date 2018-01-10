@@ -7,6 +7,9 @@ provider:
 plugins:
   - serverless-azure-functions
 
+custom:
+  dbname: beer-store-cosmodb
+
 functions:
   graphql:
     handler: handler.graphql

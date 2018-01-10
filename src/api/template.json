@@ -1,0 +1,31 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dbname": {
+      "type": "string"
+    }
+  },
+  "variables": { },
+  "resources": [{
+    "name": "[parameters('dbname')]",
+    "type": "Microsoft.DocumentDB/databaseAccounts",
+    "apiVersion": "2015-04-08",
+    "sku": {
+      "name": "Standard_LRS"
+    },
+    "location": "[resourceGroup().location]",
+    "tags": { },
+    "properties": {
+      "consistencyPolicy": {
+        "defaultConsistencyLevel": "Eventual"
+      },
+      "locations": [{
+        "locationName": "[resourceGroup().location]"
+      }],
+      "databaseAccountOfferType": "Standard",
+      "enableAutomaticFailover": false
+    }
+  }],
+  "outputs": { }
+}
