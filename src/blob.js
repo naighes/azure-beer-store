@@ -1,6 +1,7 @@
 'use strict'
 
 const DocumentClient = require('documentdb').DocumentClient
+const blobService = require('azure-storage').createBlobService(process.env['BLOB_STORAGE_CONNECTION_STRING'])
 
 const parseRow = (input, start, acc) => {
   const index = input.indexOf(',', start)
@@ -61,6 +62,18 @@ const batchInsert = (client, dbName, collectionName, documents) => Promise.all(d
   })
 }))
 
+const deleteBlob = b => {
+  return new Promise((resolve, reject) => {
+    blobService.deleteBlob('blobs', b, (error, result) => {
+      if (error) {
+        reject(error)
+      } else {
+        resolve(result)
+      }
+    })
+  })
+}
+
 const asDocument = raw => {
   return {
     id: raw[0],
@@ -70,6 +83,8 @@ const asDocument = raw => {
     type: raw[4]
   }
 }
+
+const fileName = uri => uri.substring(uri.lastIndexOf('/') + 1)
 
 module.exports.import = (context, item) => {
   const dbName = process.env['DB_NAME'],
@@ -88,6 +103,7 @@ module.exports.import = (context, item) => {
     .catch(_ => context.log('database not found'))
     .then(_ => createCollection(client, dbName, collectionName))
     .then(_ => batchInsert(client, dbName, collectionName, documents))
+    .then(_ => deleteBlob(fileName(context.bindingData.uri)))
     .then(_ => context.done())
     .catch(e => {
       // TODO: what about retrying policies?
