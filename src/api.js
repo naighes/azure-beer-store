@@ -2,6 +2,7 @@
 
 const {graphql} = require('graphql')
 const {makeExecutableSchema} = require('graphql-tools')
+const DocumentClient = require('documentdb').DocumentClient
 
 const schema = [`
   enum BeerType {
@@ -15,11 +16,10 @@ const schema = [`
   }
 
   type Beer {
-    id: Int!
+    id: String!
     name: String!
-    description: String
     thumb_url: String
-    price: Float!
+    purchase_price: Float!
   }
 `]
 
@@ -31,11 +31,11 @@ const resolvers = {
     name({name}) {
       return name
     },
-    description({description}) {
-      return description
+    purchase_price({purchase_price}) {
+      return purchase_price
     },
-    price({price}) {
-      return price
+    thumb_url({thumb_url}) {
+      return thumb_url
     }
   },
   Query: {
@@ -50,19 +50,20 @@ const executableSchema = makeExecutableSchema({
   resolvers
 })
 
-const db = {
-  listBeers: type => {
-    return [{
-      id: 1,
-      name: 'Becks',
-      description: 'a tasty blond beer',
-      price: 4.2
-    }, {
-      id: 2,
-      name: 'Corona',
-      description: 'a lightweight beer',
-      price: 3.8
-    }]
+const db = (client, dbName, collectionName) => {
+  return {
+    listBeers: type => {
+      return new Promise((resolve, reject) => {
+        client.queryDocuments(`dbs/${dbName}/colls/${collectionName}`,
+          'SELECT b.id, b.name, b.purchase_price, b.thumb_url FROM beer_list b').toArray((error, result) => {
+            if (error) {
+              reject(error)
+            } else {
+              resolve(result);
+            }
+          })
+      })
+    }
   }
 }
 
@@ -74,6 +75,11 @@ const writeResult = (result, status) => {
 }
 
 module.exports.graphql = (context, request) => {
+  const dbName = process.env['DB_NAME'],
+    collectionName = process.env['DB_COLLECTION_NAME'],
+    client = new DocumentClient(process.env['DB_HOST'], {
+      masterKey: process.env['DB_KEY']
+    })
   let query = request.method === 'POST' ? request.body : request.query
 
   if (query.query) {
@@ -82,7 +88,7 @@ module.exports.graphql = (context, request) => {
 
   graphql({schema: executableSchema,
     source: query,
-    contextValue: db})
+    contextValue: db(client, dbName, collectionName)})
     .then(result => {
       context.res = result.errors
         ? writeResult(result.errors, 400)
@@ -93,3 +99,4 @@ module.exports.graphql = (context, request) => {
     })
     .then(_ => context.done())
 }
+

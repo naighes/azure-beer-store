@@ -1,0 +1,43 @@
+service: beer-store
+
+custom:
+  dbname: beer-store-cosmodb
+  collectionName: beer_list
+  storageaccountname: beerstoreblobstorage
+
+provider:
+  name: azure
+  location: West Europe
+  environment:
+    DB_NAME: ${self:custom.dbname}
+    DB_COLLECTION_NAME: ${self:custom.collectionName}
+    DB_HOST: ${file(./serverless.env.yml):DB_HOST}
+    DB_KEY: ${file(./serverless.env.yml):DB_KEY}
+    BLOB_STORAGE_CONNECTION_STRING: ${file(./serverless.env.yml):BLOB_STORAGE_CONNECTION_STRING}
+
+plugins:
+  - serverless-azure-functions
+
+functions:
+  graphql:
+    handler: api.graphql
+    events:
+      - http: true
+        x-azure-settings:
+          authLevel : anonymous
+      - http: true
+        x-azure-settings:
+          direction: out
+          name: res
+          methods:
+            - GET
+          authLevel: anonymous
+          route: graphql
+  import:
+    handler: blob.import
+    events:
+      - blob:
+        x-azure-settings:
+          name: item
+          path: blobs/{name}.csv
+          connection: BLOB_STORAGE_CONNECTION_STRING

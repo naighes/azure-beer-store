@@ -4,6 +4,9 @@
   "parameters": {
     "dbname": {
       "type": "string"
+    },
+    "storageaccountname": {
+      "type": "string"
     }
   },
   "variables": { },
@@ -25,6 +28,19 @@
       }],
       "databaseAccountOfferType": "Standard",
       "enableAutomaticFailover": false
+    }
+  }, {
+    "type": "Microsoft.Storage/storageAccounts",
+    "name": "[parameters('storageaccountname')]",
+    "apiVersion": "2016-01-01",
+    "location": "[resourceGroup().location]",
+    "sku": {
+      "name": "Standard_LRS"
+    },
+    "kind": "BlobStorage", 
+    "properties": {
+      "accessTier": "Cool",
+      "supportsHttpsTrafficOnly": true
     }
   }],
   "outputs": { }
