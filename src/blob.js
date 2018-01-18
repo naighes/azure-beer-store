@@ -66,7 +66,8 @@ const asDocument = raw => {
     id: raw[0],
     name: raw[1],
     purchase_price: parseFloat(raw[2]),
-    thumb_url: raw[3]
+    thumb_url: raw[3],
+    type: raw[4]
   }
 }
 
@@ -79,11 +80,12 @@ module.exports.import = (context, item) => {
 
   const documents = item.split('\n')
     .map(r => parseRow(r, 0, []))
-    .filter(r => r.length === 4)
+    .filter(r => r.length === 5)
     .map(asDocument)
 
   deleteDatabase(client, dbName)
     .then(_ => createDatabase(client, dbName))
+    .catch(_ => context.log('database not found'))
     .then(_ => createCollection(client, dbName, collectionName))
     .then(_ => batchInsert(client, dbName, collectionName, documents))
     .then(_ => context.done())

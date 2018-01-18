@@ -6,9 +6,9 @@ const DocumentClient = require('documentdb').DocumentClient
 
 const schema = [`
   enum BeerType {
-    BLONDE
-    BLACK
-    RED
+    IPA
+    PaleAle
+    Sour
   }
 
   type Query {
@@ -20,6 +20,7 @@ const schema = [`
     name: String!
     thumb_url: String
     purchase_price: Float!
+    type: BeerType!
   }
 `]
 
@@ -36,6 +37,9 @@ const resolvers = {
     },
     thumb_url({thumb_url}) {
       return thumb_url
+    },
+    type({type}) {
+      return type
     }
   },
   Query: {
@@ -53,9 +57,19 @@ const executableSchema = makeExecutableSchema({
 const db = (client, dbName, collectionName) => {
   return {
     listBeers: type => {
+      const query = typeof type !== 'undefined'
+        ? {
+          query: 'SELECT b.id, b.name, b.purchase_price, b.thumb_url, b.type FROM beer_list b WHERE b.type = @type',
+          parameters: [{
+            name: '@type',
+            value: type
+          }]
+        }
+        : 'SELECT b.id, b.name, b.purchase_price, b.thumb_url, b.type FROM beer_list b'
+
       return new Promise((resolve, reject) => {
-        client.queryDocuments(`dbs/${dbName}/colls/${collectionName}`,
-          'SELECT b.id, b.name, b.purchase_price, b.thumb_url FROM beer_list b').toArray((error, result) => {
+        client.queryDocuments(`dbs/${dbName}/colls/${collectionName}`, query )
+          .toArray((error, result) => {
             if (error) {
               reject(error)
             } else {
@@ -70,7 +84,10 @@ const db = (client, dbName, collectionName) => {
 const writeResult = (result, status) => {
   return {
     status: status,
-    body: JSON.stringify(result)
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: result
   }
 }
 
