@@ -112,7 +112,7 @@ module.exports.graphql = (context, request) => {
         : writeResult(result, 200)
     })
     .catch(error => {
-      context.res = writeResulti(error, 500)
+      context.res = writeResult(error, 500)
     })
     .then(_ => context.done())
 }

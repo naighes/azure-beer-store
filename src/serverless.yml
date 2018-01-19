@@ -1,19 +1,21 @@
-service: beer-store
+service: azure-beer-store
 
 custom:
-  dbname: beer-store-cosmodb
+  dbName: beerstore
   collectionName: beer_list
-  storageaccountname: beerstoreblobstorage
+  storageAccountName: beerstore
+  containerName: blobs
 
 provider:
   name: azure
-  location: West Europe
+  location: westeurope
   environment:
-    DB_NAME: ${self:custom.dbname}
+    DB_NAME: ${self:custom.dbName}
     DB_COLLECTION_NAME: ${self:custom.collectionName}
     DB_HOST: ${file(./serverless.env.yml):DB_HOST}
     DB_KEY: ${file(./serverless.env.yml):DB_KEY}
     BLOB_STORAGE_CONNECTION_STRING: ${file(./serverless.env.yml):BLOB_STORAGE_CONNECTION_STRING}
+    CONTAINER_NAME: ${self:custom.containerName}
 
 plugins:
   - serverless-azure-functions
@@ -39,5 +41,5 @@ functions:
       - blob:
         x-azure-settings:
           name: item
-          path: blobs/{name}.csv
+          path: ${self:custom.containerName}/{name}.csv
           connection: BLOB_STORAGE_CONNECTION_STRING

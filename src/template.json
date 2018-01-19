@@ -2,16 +2,19 @@
   "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "dbname": {
+    "dbName": {
       "type": "string"
     },
-    "storageaccountname": {
+    "storageAccountName": {
       "type": "string"
     }
   },
-  "variables": { },
+  "variables": {
+    "storageAccountFullName": "[concat(toLower(parameters('storageAccountName')), uniqueString(resourceGroup().id))]",
+    "dbFullName": "[concat(toLower(parameters('dbName')), uniqueString(resourceGroup().id))]"
+  },
   "resources": [{
-    "name": "[parameters('dbname')]",
+    "name": "[variables('dbFullName')]",
     "type": "Microsoft.DocumentDB/databaseAccounts",
     "apiVersion": "2015-04-08",
     "sku": {
@@ -31,7 +34,7 @@
     }
   }, {
     "type": "Microsoft.Storage/storageAccounts",
-    "name": "[parameters('storageaccountname')]",
+    "name": "[variables('storageAccountFullName')]",
     "apiVersion": "2016-01-01",
     "location": "[resourceGroup().location]",
     "sku": {
@@ -43,5 +46,14 @@
       "supportsHttpsTrafficOnly": true
     }
   }],
-  "outputs": { }
+  "outputs": {
+    "storageAccountFullName": {
+      "type": "string",
+      "value": "[variables('storageAccountFullName')]"
+    },
+    "dbFullName": {
+      "type": "string",
+      "value": "[variables('dbFullName')]"
+    }
+  }
 }

@@ -62,9 +62,9 @@ const batchInsert = (client, dbName, collectionName, documents) => Promise.all(d
   })
 }))
 
-const deleteBlob = b => {
+const deleteBlob = (containerName, b) => {
   return new Promise((resolve, reject) => {
-    blobService.deleteBlob('blobs', b, (error, result) => {
+    blobService.deleteBlob(containerName, b, (error, result) => {
       if (error) {
         reject(error)
       } else {
@@ -89,6 +89,7 @@ const fileName = uri => uri.substring(uri.lastIndexOf('/') + 1)
 module.exports.import = (context, item) => {
   const dbName = process.env['DB_NAME'],
     collectionName = process.env['DB_COLLECTION_NAME'],
+    containerName = process.env['CONTAINER_NAME'],
     client = new DocumentClient(process.env['DB_HOST'], {
       masterKey: process.env['DB_KEY']
     })
@@ -99,15 +100,14 @@ module.exports.import = (context, item) => {
     .map(asDocument)
 
   deleteDatabase(client, dbName)
-    .then(_ => createDatabase(client, dbName))
     .catch(_ => context.log('database not found'))
+    .then(_ => createDatabase(client, dbName))
     .then(_ => createCollection(client, dbName, collectionName))
     .then(_ => batchInsert(client, dbName, collectionName, documents))
-    .then(_ => deleteBlob(fileName(context.bindingData.uri)))
+    .then(_ => deleteBlob(containerName, fileName(context.bindingData.uri)))
     .then(_ => context.done())
     .catch(e => {
       // TODO: what about retrying policies?
-      // TODO: delete blob once task run to completion
       context.log.error(`ERROR: ${JSON.stringify(e)}`)
       context.done()
     })
